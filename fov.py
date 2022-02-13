@@ -52,7 +52,7 @@ def visualise(map, vision_map):
                 try :
                     if vision_map[(i,j)]==0:
                         screen.blit(visible, (x,y))
-                    if vision_map[(i,j)]==2:
+                    if vision_map[(i,j)]==-1:
                         screen.blit(not_visible, (x,y))
                     if vision_map[(i,j)]==5:
                         screen.blit(yellow, (x,y))
@@ -102,22 +102,23 @@ def get_vision_map(map, pos, PO):
         if obstacle==pos:
             continue # obstacle sur point de départ, on ignore (on pourrait aussi dire 0 vision)
         dX=obstacle[0]-pos[0]
+        dXObstacle=dX
         dY=obstacle[1]-pos[1]
+        dYObstacle=dY
         dXa = abs(dX)
         dYa = abs(dY)
-        print("seq(%s,%s)" % (dXa,dYa))
+        print("(%s,%s)" % (dXa,dYa), end = " ")
         seqs_bord_obstacle_haut = seq(abs(2*(dXa-1) +1), 2*(dYa-(dXa==0)) +1)
+        print(" -> h seq(%s,%s)" % (abs(2*(dXa-1) +1), 2*(dYa-(dXa==0)) +1), end = " ")
         seqs_bord_obstacle_bas = seq(2*(dXa-(dYa==0)) +1, abs(2*(dYa-1)+1))
-        # seqs_bord_obstacle_haut = seq(dXa+((dXa+1)%2) + 2*(dXa>=dYa and dXa%2==1), 2*(dYa-(dXa==0)) +1)
-        # print("  haut : seq(%s,%s)"% (dXa+((dXa+1)%2) + 2*(dXa>=dYa and dXa%2==1), 2*(dYa-(dXa==0)) +1))
-        # seqs_bord_obstacle_bas = seq(2*(dXa-(dYa==0)) +1, dYa+((dYa+1)%2) + 2*(dYa>=dXa and dYa%2==1))
-        # print("  bas : seq(%s,%s)"% (2*(dXa-(dYa==0)) +1, dYa+((dYa+1)%2) + 2*(dYa>=dXa and dYa%2==1)))
-        if dYa==0:
-            seqs_bord_obstacle_haut = seqs_bord_obstacle_bas
-            print("  [correction] haut : seq(%s,%s)"% (2*(dXa-(dYa==0)) +1, dYa+((dYa+1)%2)))
-        elif dXa==0 :
-            seqs_bord_obstacle_bas = seqs_bord_obstacle_haut
-            print("  [correction] bas : seq(%s,%s)"% (dXa+((dXa+1)%2), 2*(dYa-(dXa==0)) +1))
+        print("& b seq(%s,%s)" % (2*(dXa-(dYa==0)) +1, abs(2*(dYa-1)+1)))
+        if False :
+            if dYa==0:
+                seqs_bord_obstacle_haut = seqs_bord_obstacle_bas
+                print("  [correction] haut : seq(%s,%s)"% (2*(dXa-(dYa==0)) +1, dYa+((dYa+1)%2)))
+            elif dXa==0 :
+                seqs_bord_obstacle_bas = seqs_bord_obstacle_haut
+                print("  [correction] bas : seq(%s,%s)"% (dXa+((dXa+1)%2), 2*(dYa-(dXa==0)) +1))
 
         # premier bord
         x=obstacle[0]
@@ -131,14 +132,15 @@ def get_vision_map(map, pos, PO):
         while dist < PO:
             x += signX*seqs_bord_obstacle_bas[0][a%l]
             y += signY*seqs_bord_obstacle_bas[1][a%l]
-            if x<0 or x>=len(map) or y<0 or y>=len(map[x]):
-                x -= signX*seqs_bord_obstacle_bas[0][a%l]
-                y -= signY*seqs_bord_obstacle_bas[1][a%l]
-                break
+            if False :
+                if x<0 or x>=len(map) or y<0 or y>=len(map[x]):
+                    x -= signX*seqs_bord_obstacle_bas[0][a%l]
+                    y -= signY*seqs_bord_obstacle_bas[1][a%l]
+                    break
             dist += seqs_bord_obstacle_bas[0][a%l] + seqs_bord_obstacle_bas[1][a%l]
             a+=1
             border_1.append((x,y))
-            dic[(x,y)] = 4
+            dic[(x,y)] = -3
         corner_1 = (x,y)
 
         # deuxième bord
@@ -153,38 +155,60 @@ def get_vision_map(map, pos, PO):
         while dist < PO:
             x += signX*seqs_bord_obstacle_haut[0][a%l]
             y += signY*seqs_bord_obstacle_haut[1][a%l]
-            if x<0 or x>=len(map) or y<0 or y>=len(map[x]):
-                x -= signX*seqs_bord_obstacle_haut[0][a%l]
-                y -= signY*seqs_bord_obstacle_haut[1][a%l]
-                break
+            if False:
+                if x<0 or x>=len(map) or y<0 or y>=len(map[x]):
+                    x -= signX*seqs_bord_obstacle_haut[0][a%l]
+                    y -= signY*seqs_bord_obstacle_haut[1][a%l]
+                    break
+
             dist += seqs_bord_obstacle_haut[0][a%l] + seqs_bord_obstacle_haut[1][a%l]
             a+=1
-            border_2.append((x,y))
-            dic[(x,y)] = 2
+            if dist <= PO:
+                border_2.append((x,y))
+                dic[(x,y)] = -2
         corner_2 = (x,y)
 
         # prolongement des bords
-        print(corner_1, corner_2)
+        print(corner_1, corner_2, border_1, border_2)
         arc_limite_po=[]
         x,y = corner_1
         x2,y2 = corner_2
 
-        TO=1;a=0
-        while (x,y)!=corner_2 and a<TO:
+        TO=10;a=0
+        if False :
             print(x,y, end=" ")
             xlim = max(min(x,len(map)-1), 0)
             ylim = max(min(y,len(map[xlim])-1), 0)
             print("->",xlim,ylim)
-            dic[(xlim,xlim)]=5
-            # si dX non nul,
-            # corner_2 va vers l'axe y=y_pos
+            dic[(xlim,ylim)]=5
+        while (abs(x-x2)+abs(y-y2))>2 and a<TO:
             dX=x-pos[0]
             dy=y-pos[1]
-            x+=-sign(dX)*(-1 if dY==0 else 1)
-            y+=(sign(dX)*sign(dY))*(-1 if dX==0 else 1)
+            x+=-sign(dX)*(-1 if dXObstacle==0 else 1)
+            y+=sign(dY)*(-1 if dYObstacle==0 else 1)
+            print(x,y)
             a +=1
-
-
+            arc_limite_po.append((x,y))
+        print("Filling up")
+        bord_sup_complet = arc_limite_po + ([] if dYObstacle==0 else border_1)
+        print(arc_limite_po, bord_sup_complet)
+        for c in bord_sup_complet:
+            # from red to grey is towards x=x_pos (else ignore)
+            x,y=c
+            dist=abs(pos[0]-x)+abs(pos[1]-y)
+            content = dic[(x,y)] if (dist<=PO and (x>=0 and x<len(map) and y>=0 and y<len(map))) else 0
+            TO=25; a=0
+            while content!=-2 and (x,y)!=obstacle and a<TO: # count obstacle as part of opposite border
+                if dist<=PO and (x>=0 and x<len(map) and y>=0 and y<len(map)):
+                    # print("+1 :(%s,%s)" % (x,y),dic[(x,y)]==content,end="  ")
+                    #dic[(x,y)]=-1
+                    True
+                x += sign(obstacle[0]-c[0])
+                dist=abs(pos[0]-x)+abs(pos[1]-y)
+                content = dic[(x,y)] if (dist<=PO and (x>0 and x<len(map) and y>0 and y<len(map))) else 0
+                a=a+1
+            # print()
+            #dic[c]=5
 
     return dic
 
@@ -209,14 +233,15 @@ map_data[12][12]=1
 map_data[13][15]=1
 map_data[18][18]=1
 map_data[20][14]=1
-map_data[10][17]=1
-map_data[19][17]=1
-#map_data[17][15]=1
+#map_data[10][17]=1
+#map_data[20][17]=1
+map_data[17][15]=1
+map_data[17][20]=1
 POS_PLAYER = (17,17)
 # {(5,5):0, (4,5):0, (3,5):0, (2,5):0, (1,5):0, (3,3):2}
-visualise(map_data, get_vision_map(map_data, POS_PLAYER, 21))
+visualise(map_data, get_vision_map(map_data, POS_PLAYER, 24))
 
-
+print()
 
 
 
