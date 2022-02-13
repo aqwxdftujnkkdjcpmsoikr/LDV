@@ -8,6 +8,7 @@ Fonctionnement décrit sur le forum, calcul des intersection et ajout des cellul
 
 ## Fonctionnement de l'algo un peu opti
 
+Pseudo-code
 ```
 cellulesÀTester(pointA, pointB){
     dX = pointB[x] - pointA[x]
@@ -66,8 +67,3 @@ LDV(pointA, pointB, fonctionDetectionObstacle){
 ```
 
 Ainsi la liste des cellules est retournée dans l'ordre de la plus proche à la plus lointaine, avec unicité des cellules dans la liste, pour faciliter les tests.
-
-
-
-
-.

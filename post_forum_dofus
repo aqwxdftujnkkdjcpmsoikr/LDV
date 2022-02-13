@@ -1,0 +1,45 @@
+Alors me revoilà pas mal plus tard.
+
+La méthode que j'ai décrit plus tôt fonctionne effectivement, je vais commencer par la détailler un peu.
+Il s'agit de calculer les intersections d'une droite passant par le milieu des deux cellules avec les bords de cellules (donc les coordonnées entières dans ce modèle, où on prend le coin d'une cellule de coordonnées entières, et son milieu = coordonnée du coin de référence + (0.5, 0.5)).
+
+[pseudo-code]
+Avec coordA et coordB les coordonnées des deux points entre lesquels on veut trouver une ldv,
+Avec A(x) la coordonnée selon l'axe x de A, A(y) la coordonnée selon y (et pareil pour B),
+Avec dX l'écart selon l'axe x entre les deux points, dY lécart selon l'axe y,
+
+Si écart sur l'axe X non nul:
+
+    pour i entre A(x) et B(x) (exclu à gauche, inclu à droite):
+    ____j = (A(y)+0.5) + (dY/dX)*(i-(A(x)+0.5))
+    ____Si j non entier:
+    ________Ajouter à la liste de cellules traversées les cases :
+        (i, partieEntièreVersA(j))
+        (i-signe(dX), partieEntièreVersA(j))
+
+Si écart sur l'axe Y non nul :
+
+    Ben pareil,
+    pour j entre A(y) et B(y) (exclu à gauche, inclu à droite):
+    ____i= (A(x)+0.5) + (dX/dY)*(j-(A(y)+0.5))
+    ____Si i non entier:
+    ________Ajouter à la liste de cellules traversées les cases :
+        (partieEntièreVersA(i), j)
+        (partieEntièreVersA(i), j-signe(dY)
+
+Pour chaque cellule de la liste ainsi constituée :
+
+    Si la cellule contient un obstacle, renvoyer "Pas de ligne de vue"
+
+Renvoyer "Il y a une ligne de vue"
+[/pseudo-code]
+
+Le principal inconvénient de la méthode est assez simple à voir : les cellules ne sont pas données dans l'ordre, et pas parcourues de manière unique, donc on se retrouve à tester la présence d'obstacles derrière des obstacles, ou sur des cases déjà testées, juste parce qu'on a pas été assez efficaces dans la méthode.
+
+
+Après beaucoup de creusage de tête, j'ai mis au point une deuxième méthode, en observant les séquences d'incréments sur x et y selon la parité de dX et dY.
+
+Concrètement j'ai un peu la flemme d'écrire du pseudo-code ici car l'éditeur est vraiment pas fou, donc je t'invite à aller regarder sur github où j'ai plus détaillé dans le README.
+lien : https://github.com/aqwxdftujnkkdjcpmsoikr/LDV
+
+C'était un problème intéressant, y'a sûrement moyen de faire encore mieux, mais là il est 5h du mat', j'vais dormi un peu.
